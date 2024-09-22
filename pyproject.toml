@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "yc-chatbot"
+version = "0.1.0"
+description = "RAG application using open-source tools like LlamaIndex or LangChain to ingest, summarize, and query Hacker News events stored in a vector database."
+authors = ["Martin Klosi <roise3000@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "~3.10"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
