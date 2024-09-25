@@ -14,6 +14,7 @@ llama-index = "*"
 python = "~3.10"
 pytz = "*"
 sentence-transformers = "*"
+sentencepiece = "*"
 
 [build-system]
 requires = ["poetry-core"]
