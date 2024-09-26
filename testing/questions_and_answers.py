@@ -1,4 +1,5 @@
 import chromadb
+from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from transformers import LongT5ForConditionalGeneration, T5Tokenizer
 
@@ -19,7 +20,8 @@ def retrieve_relevant_documents(query, collection):
     return documents
 
 
-def generate_answer(query, documents):
+# not used.
+def generate_naive_answer(query, documents):
 
     model = LongT5ForConditionalGeneration.from_pretrained(model_name)
     tokenizer = T5Tokenizer.from_pretrained(model_name)
@@ -36,6 +38,19 @@ def generate_answer(query, documents):
     return answer
 
 
+def generate_score_based_answer(query, documents):
+    qa_pipeline = pipeline("question-answering", model="distilbert-base-cased-distilled-squad")
+
+    answers = []
+    for doc in documents:
+        # noinspection PyArgumentList
+        answer = qa_pipeline(question=query, context=doc)
+        answers.append(answer)
+
+    best_answer = max(answers, key=lambda x: x['score'])
+    return best_answer['answer']
+
+
 if __name__ == "__main__":
 
     query = "Are there any news or events mentioning cyber security?"
@@ -45,6 +60,7 @@ if __name__ == "__main__":
 
     relevant_documents = retrieve_relevant_documents(query, collection)
 
-    answer = generate_answer(query, relevant_documents)
+    # answer = generate_naive_answer(query, relevant_documents)
+    answer = generate_score_based_answer(query, relevant_documents)
 
     print(f"Answer:\n{answer}")
