@@ -10,19 +10,17 @@ from sentence_transformers import SentenceTransformer
 
 from testing.memory import Memory
 import chromadb
-from chromadb.config import Settings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-# Load stop words
-nltk.download('stopwords', download_dir=os.getcwd())
-nltk.data.path = [os.getcwd()]
-stop_words = set(stopwords.words('english'))
-
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
 
 def clean_text(text):
+
+    # Load stop words
+    nltk.download('stopwords', download_dir=os.getcwd())
+    nltk.data.path = [os.getcwd()]
+    stop_words = set(stopwords.words('english'))
+
     cleaned_text = text.lower()
 
     cleaned_text = cleaned_text.replace("story title: ", " ")
@@ -34,6 +32,9 @@ def clean_text(text):
 
 
 def generate_embeddings(data):
+
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+
     cleaned_texts = [clean_text(story['text']) for story in data]
     embeddings = model.encode(cleaned_texts, show_progress_bar=True)
     return cleaned_texts, embeddings

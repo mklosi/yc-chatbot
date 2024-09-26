@@ -1,9 +1,10 @@
-from multiprocessing.managers import Value
 from collections import defaultdict
 
 import chromadb
 import json
 from transformers import LongT5ForConditionalGeneration, T5Tokenizer
+
+from testing.utils import model_name
 
 
 def summarize_text(text):
@@ -12,7 +13,6 @@ def summarize_text(text):
     # if len(text) > max_length:
     #     raise ValueError(f"Text length of '{len(text)}' longer than '{max_length}'.") &&&
 
-    model_name = "google/long-t5-tglobal-base"
     model = LongT5ForConditionalGeneration.from_pretrained(model_name)
     tokenizer = T5Tokenizer.from_pretrained(model_name, legacy=False)
     inputs = tokenizer(text, return_tensors="pt", truncation=False)
