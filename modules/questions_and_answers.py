@@ -3,13 +3,13 @@ from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from transformers import LongT5ForConditionalGeneration, T5Tokenizer
 
-from testing.utils import model_name
+from modules.utils import model_name
 
 
 def retrieve_relevant_documents(query, collection):
 
     model = SentenceTransformer('all-MiniLM-L6-v2')
-    n_results = 5
+    n_results = 99999999
 
     query_embedding = model.encode([query], show_progress_bar=True)[0]
     results = collection.query(
@@ -53,7 +53,8 @@ def generate_score_based_answer(query, documents):
 
 if __name__ == "__main__":
 
-    query = "Are there any news or events mentioning cyber security?"
+    # query = "Are there any news or events mentioning cyber security?"
+    query = "What are some news related to Joe Biden recently?"
 
     chromadb_client = chromadb.PersistentClient(path="chromadb")
     collection = chromadb_client.get_collection("hacker_news")

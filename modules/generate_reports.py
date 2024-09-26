@@ -4,7 +4,7 @@ import chromadb
 import json
 from transformers import LongT5ForConditionalGeneration, T5Tokenizer
 
-from testing.utils import model_name
+from modules.utils import model_name
 
 
 def summarize_text(text):

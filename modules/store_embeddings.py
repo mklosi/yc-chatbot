@@ -8,7 +8,7 @@ import nltk
 from nltk.corpus import stopwords
 from sentence_transformers import SentenceTransformer
 
-from testing.memory import Memory
+from modules.memory import Memory
 import chromadb
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
