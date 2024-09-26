@@ -8,8 +8,6 @@ from testing.utils import model_name
 def retrieve_relevant_documents(query, collection):
 
     model = SentenceTransformer('all-MiniLM-L6-v2')
-
-    # Use only the top N documents based on the cosine similarity metric.
     n_results = 5
 
     query_embedding = model.encode([query], show_progress_bar=True)[0]
