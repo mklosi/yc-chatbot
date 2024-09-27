@@ -114,7 +114,7 @@ if __name__ == "__main__":
         summaries = []
         for idx, doc in enumerate(doc_ls):
             doc_start_dt = datetime.now()
-            individual_summary, input_tokens = summarize_text(
+            individual_summary, token_count = summarize_text(
                 doc,
                 tokenizer,
                 doc_max_input_tokens,
@@ -124,10 +124,10 @@ if __name__ == "__main__":
                 doc_max_output_tokens,
             )
             summaries.append(individual_summary)
-            print(f"Processed document '{idx}' with '{input_tokens}' input_tokens in: {datetime.now() - doc_start_dt}")
+            print(f"Processed document '{idx}' with '{token_count}' token_count in: {datetime.now() - doc_start_dt}")
 
         big_text = " ".join(summaries)
-        summary, input_tokens = summarize_text(
+        summary, token_count = summarize_text(
             big_text,
             tokenizer,
             tot_max_input_tokens,
@@ -136,7 +136,7 @@ if __name__ == "__main__":
             tot_min_output_tokens,
             tot_max_output_tokens,
         )
-        print(f"\nProcessed date '{date}' with '{input_tokens}' input_tokens in: {datetime.now() - date_start_dt}")
+        print(f"\nProcessed date '{date}' with '{token_count}' token_count in: {datetime.now() - date_start_dt}")
 
         print(f"\nSummary Report for '{date}':\n\n{summary}")
 
