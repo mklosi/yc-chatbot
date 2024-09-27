@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # query = "Are there any news or events mentioning cyber security?"
     query = "What are some news related to Joe Biden or Donald Trump recently?"
 
-    top_n_results = 10
+    top_n_results = 20
 
     chromadb_client = chromadb.PersistentClient(path="chromadb")
     collection = chromadb_client.get_collection("hacker_news")
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         top_n_results,
     )
 
-    answer = generate_naive_answer(query, relevant_documents, min_output_tokens=10, max_output_tokens=100)
-    # answer = generate_score_based_answer(query, relevant_documents)
+    # answer = generate_naive_answer(query, relevant_documents, min_output_tokens=10, max_output_tokens=100)
+    answer = generate_score_based_answer(query, relevant_documents)
 
     print(f"Answer:\n{answer}")
