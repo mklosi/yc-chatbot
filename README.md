@@ -48,3 +48,8 @@ The module offers two methods for generating answers:
 ### Parameters:
 * **query** (str): The question you want to ask based on the ingested news stories.
 * **top_n_results** (int): The number of top relevant documents to retrieve from ChromaDB. 
+
+# Further Improvements
+
+* [fetch_stories.py](modules/fetch_stories.py) takes a long time to complete with very little mem footprint. Both the fetching of the HN items from the HN API, and the scraping of the html webpages associated with each item (story) can be parallelized using something like `aiohttp` and `asyncio`.
+* In [generate_reports.py](modules/generate_reports.py), currently I summarize each individual article separately and then summarize all summaries for each day. Running the summary generation on all the stories for each day at once, would probably yield better results, but I can't do that on my local machine. Probably the next step would be to move the code in GCP or AWS and use G5 or G6 instances to run it. 
