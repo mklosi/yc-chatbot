@@ -9,9 +9,9 @@ The application consists of 4 modules:
 This module is responsible for fetching Hacker News stories for the last N days. The stories are stored in JSON, later to be ingested into ChromaDB. The module should be fairly robust, as it handles many halting exceptions.
 
 ### Parameters:
-* **store_every** (int) - When fetching stories from HN for each day, store only once every <this> number. If this number is 1, then store every story. I added this param, since processing every story for the last 3 days takes about 6h to complete. With this parameter we can skip a certain number of them for testing purposes.
+* **store_every** (int) - When fetching stories from HN for each day, store only once every _this_ number. If this number is 1, then store every story. I added this param, since processing every story for the last 3 days takes about 6h to complete. With this parameter we can skip a certain number of them for testing purposes.
 * **stories_cutoff_in_days** (int) - The amount of days to go back in time and fetch stories.
-* **min_chars_per_story** (int) - Don't save stories that have fewer than <this> chars.
+* **min_chars_per_story** (int) - Don't save stories that have fewer than _this_ chars.
 
 ## [store_embeddings.py](modules/store_embeddings.py)
 
@@ -53,3 +53,4 @@ The module offers two methods for generating answers:
 
 * [fetch_stories.py](modules/fetch_stories.py) takes a long time to complete with very little mem footprint. Both the fetching of the HN items from the HN API, and the scraping of the html webpages associated with each item (story) can be parallelized using something like `aiohttp` and `asyncio`.
 * In [generate_reports.py](modules/generate_reports.py), currently I summarize each individual article separately and then summarize all summaries for each day. Running the summary generation on all the stories for each day at once, would probably yield better results, but I can't do that on my local machine. Probably the next step would be to move the code in GCP or AWS and use G5 or G6 instances to run it. 
+* In the [questions_and_answers.py](modules/questions_and_answers.py) module, I could explore more advanced models for the retrieval step, such as `all-mpnet-base-v2` or `all-distilroberta-v1`, which generally provide better semantic representations and, hence, better retrieval quality.
