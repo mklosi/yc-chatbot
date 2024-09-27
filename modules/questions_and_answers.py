@@ -1,8 +1,7 @@
 import chromadb
-import torch
-from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 from transformers import LongT5ForConditionalGeneration, T5Tokenizer
+from transformers import pipeline
 
 from modules.utils import model_name
 
@@ -52,11 +51,16 @@ def generate_score_based_answer(query, documents):
 
 
 if __name__ == "__main__":
+    ## args begin
 
+    # This is the query:
     # query = "Are there any news or events mentioning cyber security?"
     query = "What are some news related to Joe Biden or Donald Trump recently?"
 
-    top_n_results = 20
+    # Only fetch the top <this> many documents from chromadb. If this param is too high, my laptop runs out of mem.
+    top_n_results = 120
+
+    ## args end
 
     chromadb_client = chromadb.PersistentClient(path="chromadb")
     collection = chromadb_client.get_collection("hacker_news")

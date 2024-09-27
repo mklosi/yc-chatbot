@@ -1,11 +1,8 @@
 import random
-import sys
 from collections import defaultdict
-
-import chromadb
-import json
 from datetime import datetime
 
+import chromadb
 from sympy import ceiling
 from transformers import LongT5ForConditionalGeneration, T5Tokenizer
 
@@ -15,7 +12,7 @@ from modules.utils import model_name
 memory = Memory()
 
 
-# not used. &&&
+# not used.
 def get_chunks(big_text, chunk_size, overlap_percent):
     words = big_text.split()  # Split the text into words
     chunks = []
@@ -61,29 +58,13 @@ def summarize_text(
 
 
 if __name__ == "__main__":
+    ## args begin
 
-    start_dt = datetime.now()
+    # All the arguments bellow are simply parameters to fine tune the
+    #   generation of the summaries, so they are reasonable, and it can finish on my
+    #   local laptop in a reasonable amount of time.
 
-    chromadb_client = chromadb.PersistentClient(path="chromadb")
-    collection = chromadb_client.get_collection("hacker_news")
-    # results = collection.get(where={"date": {"$eq": query_date_arg_str}}) &&&
-    results = collection.get()
-
-    # # Print the results
-    # print(json.dumps(results)) # &&&
-
-    date_to_documents = defaultdict(list)
-
-    for metadata, doc in zip(results["metadatas"], results["documents"]):
-        date = metadata["date"]
-        date_to_documents[date].append(doc)
-
-    tokenizer = T5Tokenizer.from_pretrained(model_name, legacy=False)
-    model = LongT5ForConditionalGeneration.from_pretrained(model_name)
-
-    # overlap_percent = 0.33 &&&
-
-    max_docs_per_day = 10
+    max_docs_per_day = 120
 
     doc_max_input_tokens = 10000
     doc_truncation = True
@@ -95,21 +76,38 @@ if __name__ == "__main__":
     tot_min_output_tokens = 10
     tot_max_output_tokens = 1000
 
-    # Generate reports for each day
+    ## args end
+
+    start_dt = datetime.now()
+
+    chromadb_client = chromadb.PersistentClient(path="chromadb")
+    collection = chromadb_client.get_collection("hacker_news")
+    # results = collection.get(where={"date": {"$eq": query_date_arg_str}})
+    results = collection.get()
+
+    # # Print the results
+    # print(json.dumps(results))
+
+    date_to_documents = defaultdict(list)
+
+    for metadata, doc in zip(results["metadatas"], results["documents"]):
+        date = metadata["date"]
+        date_to_documents[date].append(doc)
+
+    tokenizer = T5Tokenizer.from_pretrained(model_name, legacy=False)
+    model = LongT5ForConditionalGeneration.from_pretrained(model_name)
+
+    # Generate reports for each day by first summarizing the individual documents, then summarizing the summaries.
     for date, doc_ls in sorted(date_to_documents.items()):
 
         date_start_dt = datetime.now()
 
-        # if date != "2024-09-23":
-        #     print(f"Skipping date: {date}")  # &&&
-
         print(f"\n--- Start report for date: {date} ---------------------\n")
 
-        # &&&
-        # big_text = " ".join(doc_ls)
-        # chunks = get_chunks(big_text, chunk_size=max_length, overlap_percent=overlap_percent)
+        # not used.
+        # chunks = get_chunks(big_text, chunk_size=max_length, overlap_percent=0.33)
 
-        random.shuffle(doc_ls)  # &&&
+        random.shuffle(doc_ls)  # shuffle the documents, since we are taking only a subset.
         max_docs_per_day = min(max_docs_per_day, len(doc_ls))
         doc_ls = doc_ls[:max_docs_per_day]
 

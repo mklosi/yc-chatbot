@@ -1,13 +1,12 @@
+import json
 import os
 import time
 from datetime import datetime, timedelta
-import datetime as dtt
-import pytz
-import json
-from requests.exceptions import HTTPError, SSLError
 
+import pytz
 import requests
 from bs4 import BeautifulSoup
+from requests.exceptions import HTTPError, SSLError
 
 # tz_str = "UTC"
 tz_str = "US/Pacific"
@@ -22,8 +21,8 @@ def extract_text_from_url(url):
     response.raise_for_status()  # Raise an error for bad status codes
     soup = BeautifulSoup(response.content, 'html.parser')
 
-    # Extract text from the main content of the page
-    # This may vary depending on the structure of the webpage
+    # Extract text from the main content of the page.
+    # This may vary depending on the structure of the webpage.
     paragraphs = soup.find_all('p')
     page_text = ' '.join([p.get_text() for p in paragraphs])
     return page_text
@@ -38,17 +37,15 @@ def fetch_hacker_news_stories(
     base_url = "https://hacker-news.firebaseio.com/v0"
     max_item_id = requests.get(f"{base_url}/maxitem.json", timeout=10).json()
 
-    # Get the current time and calculate the cutoff time for the 'days' parameter
+    # Get the current time and calculate the cutoff time for the 'days' parameter.
     current_time = datetime.now()
     cutoff_time = current_time - timedelta(days=stories_cutoff_in_days)
-    # The cutoff day should be full, and included.
+    # The cutoff day should be a full day, and included.
     cutoff_time = cutoff_time.replace(hour=0, minute=0, second=0, microsecond=0)
     cutoff_timestamp = int(cutoff_time.timestamp())
 
     stories = []
     for item_id in range(max_item_id, 0, -store_every):
-
-        # item_id = 41627554 # &&&
 
         item_url = f"{base_url}/item/{item_id}.json"
         try:
@@ -93,14 +90,14 @@ def fetch_hacker_news_stories(
         # Include only stories that have at least some characters.
         if len(item_data['text']) < min_chars_per_story:
             print(f"WARNING: Min char reqs not met for story_id: {item_id}")
-            continue  # &&&
+            continue
 
         # Add datetime field based on timestamp.
         item_data["dt"] = datetime.fromtimestamp(item_data["time"], tz=tz_).isoformat()
 
         stories.append(item_data)
 
-        # Checkpointer.
+        # Checkpoint.
         if len(stories) % 10 == 0:
             print(f"Stories fetched so far: {len(stories)}")
 
@@ -111,10 +108,18 @@ def fetch_hacker_news_stories(
 
 
 if __name__ == '__main__':
+    ## args being (we could use `argparse`, but no point).
 
+    # In order to be able to finish fetching stories for all days in a reasonable
+    #   amount of time, we need to only fetch every other story or so.
     store_every = 1
+    # Get stories for this amount of days in the past, including today. Last day
+    #   will have fewer stories than other days.
     stories_cutoff_in_days = 3
+    # Don't save stories that have fewer than 100 chars.
     min_chars_per_story = 100
+
+    ## args end
 
     hacker_news_stories = fetch_hacker_news_stories(
         store_every=store_every,

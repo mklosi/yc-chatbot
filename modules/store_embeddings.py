@@ -1,15 +1,14 @@
 import json
 import os
-import sys
 import warnings
 from datetime import datetime
 
+import chromadb
 import nltk
 from nltk.corpus import stopwords
 from sentence_transformers import SentenceTransformer
 
 from modules.memory import Memory
-import chromadb
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -40,11 +39,7 @@ def generate_embeddings(data):
     return cleaned_texts, embeddings
 
 
-def store_embeddings(hacker_news_stories, cleaned_texts, embeddings):
-
-    # &&& delete me.
-    # dates = [story["dt"][:10] for story in hacker_news_stories]
-    # timestamps = [story["time"] for story in hacker_news_stories]
+def store_embeddings(hacker_news_stories, use_cleaned_text, cleaned_texts, embeddings):
 
     chromadb_client = chromadb.PersistentClient(path="chromadb")
 
@@ -59,8 +54,7 @@ def store_embeddings(hacker_news_stories, cleaned_texts, embeddings):
                 "date": story["dt"][:10],
                 "timestamp": story["time"],
             }],
-            # documents=[story["text"]],  # use raw text
-            documents=[cleaned_text],  # use cleaned text ## if this is commented out, cleaned_text is not used. &&&
+            documents=[cleaned_text if use_cleaned_text else story['text']],
             embeddings=[embedding.tolist()],
             ids=[f"id_{i}"],
         )
@@ -73,6 +67,12 @@ def store_embeddings(hacker_news_stories, cleaned_texts, embeddings):
 
 
 if __name__ == '__main__':
+    ## args being
+
+    # Whether to use the cleaned text (remove stop words, lowecase, etc.), or use original text to store in chromadb.
+    use_cleaned_text = True
+
+    ## args end
 
     memory = Memory()
     memory.log_memory(print, "before")
@@ -94,7 +94,12 @@ if __name__ == '__main__':
     print(f"len embeddings 1: {len(embeddings[1])}")
     print(f"len embeddings 2: {len(embeddings[2])}")
 
-    store_embeddings(hacker_news_stories, cleaned_texts, embeddings)
+    store_embeddings(
+        hacker_news_stories,
+        use_cleaned_text,
+        cleaned_texts,
+        embeddings,
+    )
     memory.log_memory(print, "after_store")
 
     print(f"Total runtime: {datetime.now() - dt_start}")
