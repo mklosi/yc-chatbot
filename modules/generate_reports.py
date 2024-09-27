@@ -132,11 +132,11 @@ if __name__ == "__main__":
         summary, input_tokens = summarize_text(
             big_text,
             tokenizer,
-            doc_max_input_tokens,
-            doc_truncation,
+            tot_max_input_tokens,
+            tot_truncation,
             model,
-            doc_min_output_tokens,
-            doc_max_output_tokens,
+            tot_min_output_tokens,
+            tot_max_output_tokens,
         )
         print(f"\nProcessed date '{date}' with '{input_tokens}' input_tokens in: {datetime.now() - date_start_dt}")
 
