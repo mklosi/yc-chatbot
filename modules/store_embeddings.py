@@ -69,7 +69,7 @@ def store_embeddings(hacker_news_stories, use_cleaned_text, cleaned_texts, embed
 if __name__ == '__main__':
     ## args being
 
-    # Whether to use the cleaned text (remove stop words, lowecase, etc.), or use original text to store in chromadb.
+    # Whether to use the cleaned text (remove stop words, lowercase, etc.), or use original text to store in chromadb.
     use_cleaned_text = False
 
     ## args end
