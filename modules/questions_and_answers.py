@@ -58,7 +58,7 @@ if __name__ == "__main__":
     query = "What are some news related to Joe Biden or Donald Trump recently?"
 
     # Only fetch the top <this> many documents from chromadb. If this param is too high, my laptop runs out of mem.
-    top_n_results = 120
+    top_n_results = 50
 
     ## args end
 

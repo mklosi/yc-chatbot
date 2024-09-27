@@ -70,7 +70,7 @@ if __name__ == '__main__':
     ## args being
 
     # Whether to use the cleaned text (remove stop words, lowecase, etc.), or use original text to store in chromadb.
-    use_cleaned_text = True
+    use_cleaned_text = False
 
     ## args end
 

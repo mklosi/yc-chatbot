@@ -64,17 +64,17 @@ if __name__ == "__main__":
     #   generation of the summaries, so they are reasonable, and it can finish on my
     #   local laptop in a reasonable amount of time.
 
-    max_docs_per_day = 120
+    max_docs_per_day = 25
 
     doc_max_input_tokens = 10000
     doc_truncation = True
     doc_min_output_tokens = 10
     doc_max_output_tokens = 1000
 
-    tot_max_input_tokens = 10000
+    tot_max_input_tokens = 25000
     tot_truncation = True
-    tot_min_output_tokens = 10
-    tot_max_output_tokens = 1000
+    tot_min_output_tokens = 15
+    tot_max_output_tokens = 1500
 
     ## args end
 
