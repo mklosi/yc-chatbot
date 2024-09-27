@@ -48,6 +48,8 @@ def fetch_hacker_news_stories(
     stories = []
     for item_id in range(max_item_id, 0, -store_every):
 
+        # item_id = 41627554 # &&&
+
         item_url = f"{base_url}/item/{item_id}.json"
         try:
             item_data = requests.get(item_url, timeout=10).json()
@@ -91,7 +93,7 @@ def fetch_hacker_news_stories(
         # Include only stories that have at least some characters.
         if len(item_data['text']) < min_chars_per_story:
             print(f"WARNING: Min char reqs not met for story_id: {item_id}")
-            continue
+            continue  # &&&
 
         # Add datetime field based on timestamp.
         item_data["dt"] = datetime.fromtimestamp(item_data["time"], tz=tz_).isoformat()

@@ -1,47 +1,76 @@
+import random
+import sys
 from collections import defaultdict
 
 import chromadb
 import json
+from datetime import datetime
+
+from sympy import ceiling
 from transformers import LongT5ForConditionalGeneration, T5Tokenizer
 
+from modules.memory import Memory
 from modules.utils import model_name
 
+memory = Memory()
 
-def summarize_text(text):
 
-    # max_length = 16384 # &&&
-    # if len(text) > max_length:
-    #     raise ValueError(f"Text length of '{len(text)}' longer than '{max_length}'.") &&&
+# not used. &&&
+def get_chunks(big_text, chunk_size, overlap_percent):
+    words = big_text.split()  # Split the text into words
+    chunks = []
+    overlap_size = ceiling(chunk_size * overlap_percent)  # Calculate the overlap size
+    step_size = chunk_size - overlap_size  # Calculate the step size between chunks
+    start = 0
 
-    model = LongT5ForConditionalGeneration.from_pretrained(model_name)
-    tokenizer = T5Tokenizer.from_pretrained(model_name, legacy=False)
-    inputs = tokenizer(text, return_tensors="pt", truncation=False)
+    while start < len(words):
+        end = start + chunk_size
+        chunk = words[start:end]
+        chunk_text = ' '.join(chunk)
+        chunks.append(chunk_text)
+        start += step_size
+        if start >= len(words):
+            break
 
-    min_, max_ = 10, 500
-    summary_ids = model.generate(inputs.input_ids, min_length=min_, max_length=max_)
+    return chunks
+
+
+def summarize_text(
+    text, tokenizer, max_input_tokens, truncation, model, min_output_tokens, max_output_tokens,
+):
+
+    # memory.log_memory(print, "tokenizer_before")
+    # tokenizer_start_dt = datetime.now()
+    inputs = tokenizer(text, return_tensors="pt", max_length=max_input_tokens, truncation=truncation)
+    # memory.log_memory(print, "tokenizer_after")
+    # print(f"tokenizer_runtime: {datetime.now() - tokenizer_start_dt}")
+
+    # print(f"Generated '{inputs['input_ids'].size(1)} tokens.'")
+
+    # memory.log_memory(print, "generate_before")
+    # generate_start_dt = datetime.now()
+    summary_ids = model.generate(inputs.input_ids, min_length=min_output_tokens, max_length=max_output_tokens)
+    # memory.log_memory(print, "generate_after")
+    # print(f"generate_runtime: {datetime.now() - generate_start_dt}")
+
     assert len(summary_ids) == 1
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-    print(f"summary len with min_ '{min_}', max_ '{max_}': {len(summary)}")
+    # print(f"summary len with min_ '{min_output_tokens}', max_ '{max_output_tokens}': {len(summary)}\n")
 
-    return summary
-
-
-def save_report(report, date):
-    filename = f"summary_report_{date}.txt"
-    with open(filename, "w") as file:
-        file.write(report)
-    print(f"Report saved to {filename}")
+    return summary, inputs['input_ids'].size(1)
 
 
 if __name__ == "__main__":
+
+    start_dt = datetime.now()
 
     chromadb_client = chromadb.PersistentClient(path="chromadb")
     collection = chromadb_client.get_collection("hacker_news")
     # results = collection.get(where={"date": {"$eq": query_date_arg_str}}) &&&
     results = collection.get()
 
-    # Print the results
-    print(json.dumps(results))
+    # # Print the results
+    # print(json.dumps(results)) # &&&
 
     date_to_documents = defaultdict(list)
 
@@ -49,15 +78,68 @@ if __name__ == "__main__":
         date = metadata["date"]
         date_to_documents[date].append(doc)
 
+    tokenizer = T5Tokenizer.from_pretrained(model_name, legacy=False)
+    model = LongT5ForConditionalGeneration.from_pretrained(model_name)
+
+    # overlap_percent = 0.33 &&&
+
+    max_docs_per_day = 10
+
+    doc_max_input_tokens = 10000
+    doc_truncation = True
+    doc_min_output_tokens = 10
+    doc_max_output_tokens = 1000
+
+    tot_max_input_tokens = 10000
+    tot_truncation = True
+    tot_min_output_tokens = 10
+    tot_max_output_tokens = 1000
+
     # Generate reports for each day
     for date, doc_ls in sorted(date_to_documents.items()):
+
+        date_start_dt = datetime.now()
 
         # if date != "2024-09-23":
         #     print(f"Skipping date: {date}")  # &&&
 
-        print(f"\n--- Summary Report for: {date} ---------------------\n")
+        print(f"\n--- Start report for date: {date} ---------------------\n")
 
-        text = " -- ".join(doc_ls)
-        summary = summarize_text(text)
+        # &&&
+        # big_text = " ".join(doc_ls)
+        # chunks = get_chunks(big_text, chunk_size=max_length, overlap_percent=overlap_percent)
 
-        print(f"\n{summary}")
+        random.shuffle(doc_ls)  # &&&
+        max_docs_per_day = min(max_docs_per_day, len(doc_ls))
+        doc_ls = doc_ls[:max_docs_per_day]
+
+        summaries = []
+        for idx, doc in enumerate(doc_ls):
+            doc_start_dt = datetime.now()
+            individual_summary, input_tokens = summarize_text(
+                doc,
+                tokenizer,
+                doc_max_input_tokens,
+                doc_truncation,
+                model,
+                doc_min_output_tokens,
+                doc_max_output_tokens,
+            )
+            summaries.append(individual_summary)
+            print(f"Processed document '{idx}' with '{input_tokens}' input_tokens in: {datetime.now() - doc_start_dt}")
+
+        big_text = " ".join(summaries)
+        summary, input_tokens = summarize_text(
+            big_text,
+            tokenizer,
+            doc_max_input_tokens,
+            doc_truncation,
+            model,
+            doc_min_output_tokens,
+            doc_max_output_tokens,
+        )
+        print(f"\nProcessed date '{date}' with '{input_tokens}' input_tokens in: {datetime.now() - date_start_dt}")
+
+        print(f"\nSummary Report for '{date}':\n\n{summary}")
+
+    print(f"\nTotal runtime: {datetime.now() - start_dt}")

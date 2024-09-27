@@ -13,13 +13,13 @@ import chromadb
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+# Load stop words. this needs to be outside functions so it doesn't download each time. duh!
+nltk.download('stopwords', download_dir=os.getcwd())
+nltk.data.path = [os.getcwd()]
+stop_words = set(stopwords.words('english'))
+
 
 def clean_text(text):
-
-    # Load stop words
-    nltk.download('stopwords', download_dir=os.getcwd())
-    nltk.data.path = [os.getcwd()]
-    stop_words = set(stopwords.words('english'))
 
     cleaned_text = text.lower()
 
@@ -60,14 +60,15 @@ def store_embeddings(hacker_news_stories, cleaned_texts, embeddings):
                 "timestamp": story["time"],
             }],
             # documents=[story["text"]],  # use raw text
-            documents=[cleaned_text],  # use cleaned text ## if this is commented out, cleaned_text is not used.
+            documents=[cleaned_text],  # use cleaned text ## if this is commented out, cleaned_text is not used. &&&
             embeddings=[embedding.tolist()],
             ids=[f"id_{i}"],
         )
 
     # Check some embeddings.
     embeddings_ls = [embedding.tolist() for embedding in embeddings]
-    results = collection.query(query_embeddings=[embeddings_ls[0]], n_results=1000)
+    # n_results=10 is only for sanity-checking the saved stories, so it doesn't matter.
+    results = collection.query(query_embeddings=[embeddings_ls[0]], n_results=10)
     print(json.dumps(results))
 
 
@@ -80,6 +81,7 @@ if __name__ == '__main__':
     file_path = 'hacker_news_stories.json'
     with open(file_path, 'r') as file:
         hacker_news_stories = json.load(file)
+        print(f"Total stories to be stored: {len(hacker_news_stories)}")
 
     cleaned_texts, embeddings = generate_embeddings(hacker_news_stories)
     memory.log_memory(print, "after_generate")
